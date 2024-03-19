@@ -40,3 +40,11 @@ class Task:
         if result.deleted_count > 0:
             return {'message': 'Task deleted successfully'}, 200
         return {'message': 'Task not found'}, 404
+    
+    def filterTask(self):
+        filter_data = request.json
+
+        filtered_task = db.tasks.find(filter_data)
+
+        return [{**task, "_id": str(task["_id"])} for task in filtered_task], 200
+        

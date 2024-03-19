@@ -6,7 +6,6 @@ dns.resolver.default_resolver.nameservers=['8.8.8.8']
 
 import pymongo
 
-from bson.json_util import dumps
 import json
 f = open('config.json')
 envVariables = json.load(f)
@@ -24,7 +23,7 @@ from task.model import Task
 @app.route('/user/signup', methods=['POST'])
 def signup():
   print('signup')
-  return dumps(User().signup())
+  return User().signup()
 
 @app.route('/user/signout')
 def signout():
@@ -36,20 +35,24 @@ def login():
 
 @app.route('/users')
 def getUsers():
-  return dumps(User().getUsers())
+  return User().getUsers()
 
 @app.route('/tasks')
 def getTasks():
-  return dumps(Task().getTasks())
+  return Task().getTasks()
 
 @app.route('/tasks', methods=['POST'])
 def createTasks():
-    return dumps(Task().createTask())
+    return Task().createTask()
+
+@app.route('/tasks', methods=['PATCH'])
+def filterTasks():
+    return Task().filterTask()
 
 @app.route('/tasks/<task_id>', methods=['PUT'])
 def updateTask(task_id):
-    return dumps(Task().updateTask(task_id))
+    return Task().updateTask(task_id)
 
 @app.route('/tasks/<task_id>', methods=['DELETE'])
 def deleteTask(task_id):
-    return dumps(Task().deleteTask(task_id))
+    return Task().deleteTask(task_id)
