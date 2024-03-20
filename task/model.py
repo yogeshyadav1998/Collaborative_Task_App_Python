@@ -1,5 +1,5 @@
 from flask import Flask, request, session, redirect
-from app import db
+from mongodb import db
 
 task_schema = {
     'id': str,
@@ -13,7 +13,7 @@ task_schema = {
 class Task:
     def getTasks(self):
         Tasks = db.tasks.find()
-        return [{**task, "_id": str(task["_id"])} for task in Tasks], 200
+        return Tasks, 200
 
     def createTask(self):
         task_data = request.json

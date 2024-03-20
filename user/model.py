@@ -1,10 +1,8 @@
-from flask import Flask, request, session, redirect
-from app import db
+from flask import Flask, request, session, redirect, Response, jsonify
+from mongodb import db
+import secrets
 
 class User:
-
-  def start_session(self):
-    session['logged_in'] = 'true'
 
   def signup(self):
     userData= request.json
@@ -14,22 +12,27 @@ class User:
     user = {
       "username": userData['username'],
       "email": userData['email'],
-      "password": userData['password']
+      "password": userData['password'],
+      "salt": ''
     }
 
     # Check for existing email address
     if db.users.find_one({ "email": user['email'] }):
       return { "error": "Email address already in use"}, 400
-
+    
+    salt = secrets.token_hex(8)
+    user["salt"] = salt
     if db.users.insert_one(user):
       return user, 200
 
     return { "error": "Signup failed" }, 400
   
   def signout(self):
-    if session['logged_in'] == 'true':
-      session['logged_in'] = 'false'
-      return { "message": "User logout completed" }, 200
+    if 'AUTO-AUTH-TASK-APP' in request.cookies:
+      res = Response()
+      res.delete_cookie('AUTO-AUTH-TASK-APP')
+      res.set_data("User logged out")
+      return res, 200
     return { "message": "User already logged out" }, 200
   
   def login(self):
@@ -39,14 +42,13 @@ class User:
     })
 
     if user and userData['password'] == user['password']:
-      self.start_session()
-      return { "message": "User login completed" }, 200
+      res = Response()
+      res.set_cookie('AUTO-AUTH-TASK-APP', user['salt'])
+      res.set_data("User logged in")
+      return res
     
     return { "error": "Invalid login credentials" }, 401
   
   def getUsers(self):
     users = db.users.find()
-    userList = []
-    for user in users:
-      userList.append(user)
-    return userList
+    return users, 200
