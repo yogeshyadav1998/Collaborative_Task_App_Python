@@ -16,7 +16,7 @@ def signout():
 
 @userApp.route('/user/login', methods=['POST'])
 def login():
-  return User().login()
+  return json.loads(json_util.dumps(User().login()))
 
 @userApp.route('/users')
 def getUsers():

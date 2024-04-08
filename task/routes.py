@@ -9,6 +9,10 @@ import json
 def getTasks():
   return json.loads(json_util.dumps(Task().getTasks()))
 
+@taskApp.route('/tasks/<task_id>')
+def getTask(task_id):
+  return json.loads(json_util.dumps(Task().getTask(task_id)))
+
 @taskApp.route('/tasks', methods=['POST'])
 def createTasks():
     return Task().createTask()

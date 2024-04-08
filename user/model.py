@@ -1,6 +1,23 @@
-from flask import Flask, request, session, redirect, Response, jsonify
+from flask import request, Response, jsonify, json
 from mongodb import db
-import secrets
+import jwt
+import datetime
+
+f = open('config.json')
+envVariables = json.load(f)
+
+def generate_token(userData):
+    # Example payload data to be included in the JWT token
+    payload = {
+        'username': userData['username'],
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)  # Token expiration time
+    }
+
+    # Generate JWT token
+    token = jwt.encode(payload, envVariables['SECRET_KEY'], algorithm='HS256')
+
+    # Return the token as response
+    return token
 
 class User:
 
@@ -8,20 +25,19 @@ class User:
     userData= request.json
     print(userData)
 
+    token = generate_token(userData)
+
     # Create the user object
     user = {
       "username": userData['username'],
-      "email": userData['email'],
       "password": userData['password'],
-      "salt": ''
+      "salt": token
     }
 
     # Check for existing email address
-    if db.users.find_one({ "email": user['email'] }):
-      return { "error": "Email address already in use"}, 400
+    if db.users.find_one({ "username": user['username'] }):
+      return { "error": "User id already in use"}, 400
     
-    salt = secrets.token_hex(8)
-    user["salt"] = salt
     if db.users.insert_one(user):
       return user, 200
 
@@ -38,16 +54,16 @@ class User:
   def login(self):
     userData= request.json
     user = db.users.find_one({
-      "email": userData['email']
+      "username": userData['username']
     })
 
     if user and userData['password'] == user['password']:
-      res = Response()
-      res.set_cookie('AUTO-AUTH-TASK-APP', user['salt'])
-      res.set_data("User logged in")
-      return res
+      # res = Response()
+      # res.set_cookie('AUTO-AUTH-TASK-APP', user['salt'])
+      # res.set_data("User logged in")
+      return user
     
-    return { "error": "Invalid login credentials" }, 401
+    return { "error": "Invalid login credentials" }
   
   def getUsers(self):
     users = db.users.find()

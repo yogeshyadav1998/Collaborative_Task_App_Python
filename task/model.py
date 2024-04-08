@@ -14,6 +14,10 @@ class Task:
     def getTasks(self):
         Tasks = db.tasks.find()
         return Tasks, 200
+    
+    def getTask(self, taskId):
+        task = db.tasks.find_one({"id": taskId})
+        return task, 200
 
     def createTask(self):
         task_data = request.json
