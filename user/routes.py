@@ -18,6 +18,10 @@ def signout():
 def login():
   return json.loads(json_util.dumps(User().login()))
 
-@userApp.route('/users')
+@userApp.route('/user')
 def getUsers():
   return json.loads(json_util.dumps(User().getUsers()))
+
+@userApp.route('/user', methods=['PUT'])
+def updateUser():
+  return json.loads(json_util.dumps(User().updateUser()))

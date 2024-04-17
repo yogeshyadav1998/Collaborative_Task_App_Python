@@ -31,7 +31,8 @@ class User:
     user = {
       "username": userData['username'],
       "password": userData['password'],
-      "salt": token
+      "salt": token,
+      "role": userData['role']
     }
 
     # Check for existing email address
@@ -58,13 +59,17 @@ class User:
     })
 
     if user and userData['password'] == user['password']:
-      # res = Response()
-      # res.set_cookie('AUTO-AUTH-TASK-APP', user['salt'])
-      # res.set_data("User logged in")
       return user
     
     return { "error": "Invalid login credentials" }
   
   def getUsers(self):
-    users = db.users.find()
+    userData= request.json
+    users = db.users.find(userData)
+    print(users)
     return users, 200
+  
+  def updateUser(self):
+    userData= request.json
+    user = db.users.update_one({"username": userData["username"]},{"$set": userData} )
+    return { "message": "user updated" }, 200
